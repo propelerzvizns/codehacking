@@ -10,6 +10,7 @@ use App\User;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
+use Illuminate\Support\Facades\Session;
 
 class AdminUsersController extends Controller
 {
@@ -33,6 +34,7 @@ class AdminUsersController extends Controller
     public function create()
     {
         //
+
         $roles = Role::lists('name', 'id')->all();
         return view('admin.users.create', compact('roles'));
     }
@@ -46,6 +48,7 @@ class AdminUsersController extends Controller
     public function store(UsersRequest $request)
     {
         //
+
         if (trim($request->password == '')) {
             $input = $request->except('password');
 
@@ -73,6 +76,7 @@ class AdminUsersController extends Controller
 
 
         User::create($input);
+        Session::flash('created_user', 'The user has been created');
         return redirect('/admin/users');
 
 
@@ -115,6 +119,7 @@ class AdminUsersController extends Controller
     public function update(UsersEditRequest $request, $id)
     {
         //
+        Session::flash('updated_user', 'The user has been updated');
         $user = User::findOrFail($id);
 
         if (trim($request->password == '')) {
@@ -155,6 +160,14 @@ class AdminUsersController extends Controller
     public function destroy($id)
     {
         //
-        return view('admin.users.destroy');
+        $user = User::findOrFail($id);
+
+        unlink(public_path() . $user->photo->file);
+
+        $user->delete();
+
+        Session::flash('deleted_user', 'The user has been deleted');
+
+        return redirect('/admin/users');
     }
 }
